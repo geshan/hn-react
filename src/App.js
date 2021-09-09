@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
+import flagsmith from 'flagsmith';
 import './App.css';
 
 function App() {
   const [stories, setStories] = useState([]);
   const [message, setMessage] = useState('loading...');
+  const [showStoryPoints, setShowStoryPoints] = useState(false);
   useEffect(() => {
     async function fetchNewsStories () {
       try {
@@ -16,7 +18,15 @@ function App() {
         setMessage('could not fetch stories');
       }
     }
-    fetchNewsStories()
+    fetchNewsStories();
+    flagsmith.init({
+      environmentID:"DRLDV3g6nJGkh4KZfaSS5c",
+      cacheFlags: true,
+      enableAnalytics: true,
+      onChange: (oldFlags, params) => {
+        setShowStoryPoints(flagsmith.hasFeature('show_story_points'));
+      }
+    });    
   }, []);
 
   return (
@@ -26,7 +36,7 @@ function App() {
         {message}
         <div className="stories">
           {Array.isArray(stories) && stories.map(
-            story => story.url && <h3><a href={story.url} target="_blank" rel="noreferrer">{story.title}</a> - by {story.author}</h3>
+            story => story.url && <h3><a href={story.url} target="_blank" rel="noreferrer">{story.title}</a> - by {story.author} {showStoryPoints ? '- points '+ story.points : ''}</h3>
           )}
         </div>
       </header>
